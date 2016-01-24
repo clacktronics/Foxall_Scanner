@@ -3,3 +3,4 @@ bin/
 lib/
 .Python
 include/
+.DS_Store
