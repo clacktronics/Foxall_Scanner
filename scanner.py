@@ -1,86 +1,152 @@
-from os import listdir
-from time import sleep
 from PIL import Image
-import StringIO
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+import pyinsane.abstract as pyinsane
+from time import sleep
+import sys
 
-
-
-class scanner(object):
-    @property
-    def scanMode(self):
-        return self.mode
-
-    @scanMode.setter
-    def mode(self, mode):
-        pass
-
-
-class saneScanner(scanner):
-    pass
-
-
-class testScanner(scanner):
+class scanner():
+    '''
+    This class combines pyinsane abstract and image so the scanner automatically
+    produces an iterating image of the scan frame by frame. It overlays the new
+    image ontop of the old.
+    '''
     def __init__(self):
-        self.images = [img for img in listdir('test_images') if img[0] != '.']
+
+        devices = pyinsane.get_devices()
+        while len(devices) < 0:
+            print "Can not find scanner, retrying in 10 seconds"
+            sleep(10)
+            devices = pyinsane.get_devices()
+
+        self.device = devices[0]
+
+        print "Using scanner: %s" % str(self.device.model)
+        print "Address: %s" % str(self.device.name)
+
+        self.device.options['resolution'].value = 75
+        self.device.options['mode'].value = 'Color'
+        self.device.options['preview'].value = True
+
+        self.is_scanning = False
+
+    def start_scan(self):
+
+        self.is_scanning = True
+
+        self.last_line = 0
+        # Set bed to max size
+        # for some reason, this only works if set just before scan session
+        self.device.options['br-y'].value = self.device.options['br-y'].constraint[1]
+        self.device.options['br-x'].value = self.device.options['br-x'].constraint[1]
+
+        self.scan_session = self.device.scan()
+        expected_size = self.scan_session.scan.expected_size
+
+        if 'img' not in dir(self):
+            self.img = Image.new("RGB", expected_size, "#FFF")
+
+    def end_scan(self):
+        self.is_scanning = False
+        del self.scan_session
 
     def scan(self):
-        sleep(1)
-        for image in self.images:
-            sleep(1)
-            yield image
+        try:
+
+            self.scan_session.scan.read()
+            line = self.scan_session.scan.available_lines[1]
+
+            sys.stdout.write("progress: [%s]\r" % line)
+            sys.stdout.flush()
+
+            if (line > self.last_line):
+
+                subimg = self.scan_session.scan.get_image(self.last_line, line)
+
+                self.img.paste(subimg, (0, self.last_line))
+
+            self.last_line = line
+
+        except EOFError:
+            sys.stdout.write("progress:[DONE]\n")
+            self.end_scan()
+
+
+if __name__ == '__main__':
+
+    scanner = scanner()
+
+    scanner.start_scan()
+    while scanner.is_scanning:
+        scanner.scan()
+        scanner.img.show()
+
+    scanner.start_scan()
+    while scanner.is_scanning:
+        scanner.scan()
+        scanner.img.show()
 
 
 
-if __name__ == "__main__":
-# This is a prototype of how it might work
-    class scanHandler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            # Make a blank black image of bed, size info can be pulled from the SANE driver
-            # It could actually be the last image rather than black.
-            outputImg = Image.new("RGB", (1200, 2048), "#000000")
-            # Very rough simulation of the scanner
-            scanner = testScanner()
-            # This returns the next chunk every 1 second
-            scanReturn = scanner.scan()
-            # every chunk is counted so its position is known SANE actually provides X and Y in real life
-            pastePos = 0
 
-            # Header for mpjpeg style stream
-            self.send_response(200)
-            self.send_header('Content-type','multipart/x-mixed-replace; boundary=--frame')
-            self.end_headers()
 
-            # Begin scan, it feeds a frame at a time
-            while True:
-                try:
-                    # load up next image chunk from scanner (this is not how it works with SANE)
-                    partImage = Image.open('test_images/' + scanReturn.next())
-                    # Paste it onto the output image
-                    outputImg.paste(partImage, (0,pastePos))
-                    # increment chunk position
-                    pastePos += 102
 
-                    #Save to IO to get length
-                    tmpFile = StringIO.StringIO()
-                    outputImg.save(tmpFile,'JPEG')
 
-                    # Each frame is sent with this header
-                    self.wfile.write("--frame")
-                    self.send_header('Content-type','image/jpeg')
-                    self.send_header('Content-length',str(tmpFile.len))
-                    self.end_headers()
-                    # Send image
-                    outputImg.save(self.wfile,'JPEG')
 
-                except KeyboardInterrupt:
-                    break
-                except:
-                    print "End of Stream"
-                    break
-            return
 
-    server = HTTPServer(('',8080),scanHandler)
-    server.serve_forever()
 
-    # Output image, this is a black square and the chunks are pasted into it
+
+
+
+
+
+
+
+# def makeScan(device, showInfo=True):
+#
+#     print("I'm going to use the following scanner: %s" % (str(device.model)))
+#
+#     device.options['resolution'].value = 75
+#     device.options['mode'].value = 'Color'
+#     device.options['preview'].value = True
+#     device.options['br-y'].value = device.options['br-y'].constraint[1]
+#     device.options['br-x'].value = device.options['br-x'].constraint[1]
+#
+#
+#
+#     if showInfo:
+#         for option in device.options:
+#             constraints = device.options[option].constraint
+#             if constraints != None:
+#                 try: optVal = device.options[option].value
+#                 except: optVal = ''
+#                 print "%s : [%s] set: %s" % (option, ','.join([str(x) for x in constraints]), optVal)
+#
+#         print device.options.keys()
+#
+#
+#     scan_session = device.scan()
+#     try:
+#         while True:
+#             scan_session.scan.read()
+#     except EOFError:
+#         pass
+#
+#     image = scan_session.images[0]
+#
+#     image.show()
+#
+#
+# if __name__ == '__main__':
+#     from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+#     import pyinsane.abstract_th as pyinsane
+#     import thread
+#
+#
+#     import pyinsane.abstract as pyinsane
+#
+#     devices = pyinsane.get_devices()
+#     assert(len(devices) > 0)
+#
+#     thread.start_new_thread( makeScan, (devices[0], True ) )
+#
+#     while True:
+#         pass
