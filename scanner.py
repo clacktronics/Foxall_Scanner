@@ -24,7 +24,7 @@ class scanner():
 
         self.device.options['resolution'].value = 75
         self.device.options['mode'].value = 'Color'
-        self.device.options['preview'].value = True
+        if 'preview' in self.device.options.keys(): self.device.options['preview'].value = True
 
         self.is_scanning = False
 
