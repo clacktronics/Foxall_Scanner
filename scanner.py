@@ -9,15 +9,15 @@ class scanner():
     produces an iterating image of the scan frame by frame. It overlays the new
     image ontop of the old.
     '''
-    def __init__(self):
+    def __init__(self, deviceint):
 
         devices = pyinsane.get_devices()
-        while len(devices) < 0:
+        while len(devices) <= 0:
             print "Can not find scanner, retrying in 10 seconds"
             sleep(10)
             devices = pyinsane.get_devices()
 
-        self.device = devices[0]
+        self.device = devices[deviceint]
 
         print "Using scanner: %s" % str(self.device.model)
         print "Address: %s" % str(self.device.name)
@@ -83,70 +83,3 @@ if __name__ == '__main__':
     while scanner.is_scanning:
         scanner.scan()
         scanner.img.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def makeScan(device, showInfo=True):
-#
-#     print("I'm going to use the following scanner: %s" % (str(device.model)))
-#
-#     device.options['resolution'].value = 75
-#     device.options['mode'].value = 'Color'
-#     device.options['preview'].value = True
-#     device.options['br-y'].value = device.options['br-y'].constraint[1]
-#     device.options['br-x'].value = device.options['br-x'].constraint[1]
-#
-#
-#
-#     if showInfo:
-#         for option in device.options:
-#             constraints = device.options[option].constraint
-#             if constraints != None:
-#                 try: optVal = device.options[option].value
-#                 except: optVal = ''
-#                 print "%s : [%s] set: %s" % (option, ','.join([str(x) for x in constraints]), optVal)
-#
-#         print device.options.keys()
-#
-#
-#     scan_session = device.scan()
-#     try:
-#         while True:
-#             scan_session.scan.read()
-#     except EOFError:
-#         pass
-#
-#     image = scan_session.images[0]
-#
-#     image.show()
-#
-#
-# if __name__ == '__main__':
-#     from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-#     import pyinsane.abstract_th as pyinsane
-#     import thread
-#
-#
-#     import pyinsane.abstract as pyinsane
-#
-#     devices = pyinsane.get_devices()
-#     assert(len(devices) > 0)
-#
-#     thread.start_new_thread( makeScan, (devices[0], True ) )
-#
-#     while True:
-#         pass

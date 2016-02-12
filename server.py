@@ -34,6 +34,7 @@ class scanHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     # Send image
                     scanner.img.save(self.wfile,'JPEG')
+
         else:
             print 'Scan in progress, this request is sent single image'
             self.send_header('Content-type','image/jpeg')
@@ -42,6 +43,6 @@ class scanHandler(BaseHTTPRequestHandler):
         return
 
 
-scanner = scanner()
-server =  ThreadedHTTPServer(('',8080),scanHandler)
+scanner = scanner(0)
+server =  ThreadedHTTPServer(('',80),scanHandler)
 server.serve_forever()
