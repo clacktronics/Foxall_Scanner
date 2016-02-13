@@ -9,13 +9,39 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 class scanHandler(BaseHTTPRequestHandler):
 
+    def get_fields(self, path):
+
+        s = path.rfind('?')
+        if s == -1:
+            return
+
+        path = path[s+1:].split('&')
+
+        properties = {}
+        for var in path:
+            property = var.split('=')
+            print property
+            properties[property[0]] = property[1]
+
+        return properties
+
 
     def do_GET(self):
+        url_properties = self.get_fields(self.path)
+
+
+
         self.send_response(200)
         if not scanner.is_scanning:
             # Header for mpjpeg style stream
             self.send_header('Content-type','multipart/x-mixed-replace; boundary=--frame')
             self.end_headers()
+
+            for property in url_properties:
+                scanner.set_option(property, url_properties[property])
+
+            if 'br-x' not in url_properties.keys() and 'br-y' not in url_properties.keys():
+                scanner.max_end_scan()
 
             # Begin scan, it feeds a frame at a time
             scanner.start_scan()

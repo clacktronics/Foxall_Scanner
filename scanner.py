@@ -33,16 +33,17 @@ class scanner():
         self.is_scanning = True
 
         self.last_line = 0
-        # Set bed to max size
-        # for some reason, this only works if set just before scan session
-        self.device.options['br-y'].value = self.device.options['br-y'].constraint[1]
-        self.device.options['br-x'].value = self.device.options['br-x'].constraint[1]
+
 
         self.scan_session = self.device.scan()
         expected_size = self.scan_session.scan.expected_size
 
         if 'img' not in dir(self):
             self.img = Image.new("RGB", expected_size, "#FFF")
+
+        if self.img.size != expected_size:
+            self.img = Image.new("RGB", expected_size, "#FFF")
+            #self.img.resize(expected_size)
 
     def end_scan(self):
         self.is_scanning = False
@@ -68,6 +69,23 @@ class scanner():
         except EOFError:
             sys.stdout.write("progress:[DONE]\n")
             self.end_scan()
+
+    def set_option(self, option, value):
+        try:
+            try:
+                value = int(value)
+            except:
+                pass
+
+            self.device.options[option].value = value
+        except:
+            print 'cannot set %s to %s' % (option, value)
+
+    def max_end_scan(self):
+        # Set bed to max size
+        # for some reason, this only works if set just before scan session
+        self.set_option('br-y', self.device.options['br-y'].constraint[1])
+        self.set_option('br-x', self.device.options['br-x'].constraint[1])
 
 
 if __name__ == '__main__':
