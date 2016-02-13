@@ -14,6 +14,20 @@ may find scanner does nothing if program terminates during the scan (this happen
 
 use `scanimage -L` from `sane-utils` to test if SANE can see the image
 
+###URL
+
+`[ipadress]/[image_mode]?[property=value]&[property=value]`
+
+| Part          | Options                 | Use   |
+| ------------- |:-----------------------:| -----:|
+| [ipadress]    | localhost, ip or domain | adress of the scanner |
+| [image_mode]  | line,full               | line returns only the current scanline so you have to set it up |
+| [properties] | mode=(color, gray, lineart),
+                 preview=(0,1),
+                 resolution=(50,75,100,150,200)      | Properties directly in SANE can be set |
+
+ e.g `http://localhost/full?mode=color&brightness=1&resolution=100&preview=0`
+
 ###Dependencies
 
 python modules

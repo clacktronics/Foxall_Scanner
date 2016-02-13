@@ -26,6 +26,8 @@ class scanner():
         self.device.options['mode'].value = 'Color'
         if 'preview' in self.device.options.keys(): self.device.options['preview'].value = True
 
+        self.subimg = Image.new("RGB", (1, 1), "#F00")
+
         self.is_scanning = False
 
     def start_scan(self):
@@ -60,9 +62,9 @@ class scanner():
 
             if (line > self.last_line):
 
-                subimg = self.scan_session.scan.get_image(self.last_line, line)
+                self.subimg = self.scan_session.scan.get_image(self.last_line, line)
 
-                self.img.paste(subimg, (0, self.last_line))
+                self.img.paste(self.subimg, (0, self.last_line))
 
             self.last_line = line
 
