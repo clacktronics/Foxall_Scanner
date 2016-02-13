@@ -12,13 +12,14 @@ if another request is put in during scan it just sends back current image state
 
 may find scanner does nothing if program terminates during the scan (this happens a lot with the Lide 100), simply disconnect and reconnect USB
 
+use `scanimage -L` from `sane-utils` to test if SANE can see the image
 
 ###Dependencies
 
 python modules
 ```
-Pillow==3.1.0
-pyinsane
+Pillow 3.1.0 (other versions of PIL probably work)
+Pyinsane
 ```
 
 
