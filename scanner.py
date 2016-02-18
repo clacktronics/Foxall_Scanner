@@ -29,6 +29,7 @@ class scanner():
         self.subimg = Image.new("RGB", (1, 1), "#F00")
 
         self.is_scanning = False
+        self.make_composite = True
 
     def start_scan(self):
 
@@ -64,7 +65,10 @@ class scanner():
 
                 self.subimg = self.scan_session.scan.get_image(self.last_line, line)
 
-                self.img.paste(self.subimg, (0, self.last_line))
+                if self.make_composite:
+                    self.img.paste(self.subimg, (0, self.last_line))
+                else:
+                    self.img = self.subimg
 
             self.last_line = line
 
