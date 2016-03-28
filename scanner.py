@@ -87,6 +87,7 @@ class scanner():
     def max_end_scan(self):
         # Set bed to max size
         # for some reason, this only works if set just before scan session
+        print "Scanning Entire Bed"
         self.set_option('br-y', self.device.options['br-y'].constraint[1])
         self.set_option('br-x', self.device.options['br-x'].constraint[1])
 
