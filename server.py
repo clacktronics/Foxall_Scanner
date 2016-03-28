@@ -69,8 +69,8 @@ class scanHandler(BaseHTTPRequestHandler):
                 if getConst == None: getConst = ''
                 self.wfile.write("<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (item, getVal, getConst))
             self.wfile.write("</table>")
-            self.wfile.write("<h3>Current Image in buffer</h3>")
-            self.wfile.write("<img src=\"/stored\" width=\"300\" />")
+            #self.wfile.write("<h3>Current Image in buffer</h3>")
+            #self.wfile.write("<img src=\"/stored\" width=\"300\" />")
             self.wfile.write("</body></html>")
 
         if page == "readopt":
