@@ -60,16 +60,17 @@ class scanner():
             sys.stdout.write("progress: [%s]\r" % line)
             sys.stdout.flush()
 
-            if (line > self.last_line):
+            #if (line > self.last_line):
 
-                self.subimg = self.scan_session.scan.get_image(self.last_line, line)
+            #    self.subimg = self.scan_session.scan.get_image(self.last_line, line)
 
-                self.img.paste(self.subimg, (0, self.last_line))
+            #    self.img.paste(self.subimg, (0, self.last_line))
 
-            self.last_line = line
+            #self.last_line = line
 
         except EOFError:
             sys.stdout.write("progress:[DONE]\n")
+            self.img = self.scan_session.images[0]
             self.end_scan()
 
     def set_option(self, option, value):

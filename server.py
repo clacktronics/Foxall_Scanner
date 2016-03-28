@@ -12,14 +12,18 @@ class scanHandler(BaseHTTPRequestHandler):
     def get_fields(self, path):
 
         s = path.rfind('?')
-        if s == -1:
+        if s == -1 or len(path) == s:
             return
 
-        path = path[s+1:].split('&')
+        if path.rfind('&') != -1:
+            path = path[s+1:].split('&')
+        else:
+            path = [path[s+1:]]
 
         properties = {}
         for var in path:
             property = var.split('=')
+            if len(property) == 1: property.append('')
             print property
             properties[property[0]] = property[1]
 
@@ -31,8 +35,9 @@ class scanHandler(BaseHTTPRequestHandler):
 
         url_properties = self.get_fields(self.path)
         page_len = self.path.rfind('?')
-        if page_len == 0: page_len = len(page)+1
-        page = self.path[1:]
+        if page_len == -1: page_len = len(self.path)
+        page = self.path[1:page_len]
+        print "sending %s" % page
 
         if page not in pages:
             print '%s rejected' % page
