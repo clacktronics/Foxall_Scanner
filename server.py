@@ -27,7 +27,7 @@ class scanHandler(BaseHTTPRequestHandler):
 
 
     def do_GET(self):
-        pages = ['','full', 'line']
+        pages = ['','full']
 
         url_properties = self.get_fields(self.path)
         page_len = self.path.rfind('?')
@@ -42,7 +42,7 @@ class scanHandler(BaseHTTPRequestHandler):
 
         if not scanner.is_scanning:
             # Header for mpjpeg style stream
-            self.send_header('Content-type','multipart/x-mixed-replace; boundary=--frame')
+            self.send_header('Content-type','image/jpeg')
             self.end_headers()
 
             if url_properties != None:
@@ -59,23 +59,10 @@ class scanHandler(BaseHTTPRequestHandler):
             # Begin scan, it feeds a frame at a time
             scanner.start_scan()
             while scanner.is_scanning:
-
                     scanner.scan()
 
-                    #Save to IO to get length
-                    tmpFile = StringIO.StringIO()
-                    scanner.img.save(tmpFile,'JPEG')
+            scanner.img.save(self.wfile,'JPEG')
 
-                    # Each frame is sent with this header
-                    self.wfile.write("--frame")
-                    self.send_header('Content-type','image/jpeg')
-                    self.send_header('Content-length',str(tmpFile.len))
-                    self.end_headers()
-                    # Send image
-                    if page == '' or page == 'full':
-                        scanner.img.save(self.wfile,'JPEG')
-                    elif page == 'line':
-                        scanner.subimg.save(self.wfile,'JPEG')
 
         else:
             print 'Scan in progress, this request is sent single image'
